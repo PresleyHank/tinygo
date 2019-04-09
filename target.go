@@ -259,7 +259,7 @@ func sourceDir() string {
 		// Very unlikely. Bail out if it happens.
 		panic("could not get executable path: " + err.Error())
 	}
-	root = filepath.Dir(filepath.Dir(path))
+	root = filepath.Dir(path)
 	if isSourceDir(root) {
 		return root
 	}

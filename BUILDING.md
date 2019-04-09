@@ -122,4 +122,4 @@ the following command:
 
 TinyGo will get extracted to a `tinygo` directory. You can then call it with:
 
-    ./tinygo/bin/tinygo
+    ./tinygo/tinygo

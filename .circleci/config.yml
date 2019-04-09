@@ -47,6 +47,18 @@ commands:
           command: |
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure --vendor-only
+  llvm-source-linux:
+    steps:
+      - restore_cache:
+          keys:
+            - llvm-source-8-v2
+      - run:
+          name: "Fetch LLVM source"
+          command: make llvm-source
+      - save_cache:
+          key: llvm-source-8-v2
+          paths:
+            - llvm
   smoketest:
     steps:
       - smoketest-no-avr
@@ -83,6 +95,7 @@ commands:
           keys:
             - go-cache-{{ checksum "Gopkg.lock" }}-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
             - go-cache-{{ checksum "Gopkg.lock" }}
+      - llvm-source-linux
       - dep
       - run: go install .
       - run: make test
@@ -117,16 +130,7 @@ commands:
           keys:
             - go-cache-{{ checksum "Gopkg.lock" }}-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
             - go-cache-{{ checksum "Gopkg.lock" }}
-      - restore_cache:
-          keys:
-            - llvm-source-8-v2
-      - run:
-          name: "Fetch LLVM source"
-          command: make llvm-source
-      - save_cache:
-          key: llvm-source-8-v2
-          paths:
-            - llvm
+      - llvm-source-linux
       - restore_cache:
           keys:
             - llvm-build-8-v2
@@ -164,7 +168,7 @@ commands:
           name: "Build TinyGo release"
           command: |
             make release -j3
-            cp -p build/release.tar.gz /tmp/tinygo.linux-amd64.tar.gz
+            cp -p release.tar.gz /tmp/tinygo.linux-amd64.tar.gz
       - store_artifacts:
           path: /tmp/tinygo.linux-amd64.tar.gz
       - save_cache:
@@ -177,7 +181,7 @@ commands:
           command: |
             mkdir -p ~/lib
             tar -C ~/lib -xf /tmp/tinygo.linux-amd64.tar.gz
-            ln -s ~/lib/tinygo/bin/tinygo /go/bin/tinygo
+            ln -s ~/lib/tinygo/tinygo /go/bin/tinygo
             tinygo version
       - smoketest
   build-macos:
@@ -229,7 +233,7 @@ commands:
           name: "Build TinyGo release"
           command: |
             make release -j3
-            cp -p build/release.tar.gz /tmp/tinygo.darwin-amd64.tar.gz
+            cp -p release.tar.gz /tmp/tinygo.darwin-amd64.tar.gz
       - store_artifacts:
           path: /tmp/tinygo.darwin-amd64.tar.gz
       - run:
@@ -237,7 +241,7 @@ commands:
           command: |
             mkdir -p ~/lib
             tar -C /usr/local/opt -xf /tmp/tinygo.darwin-amd64.tar.gz
-            ln -s /usr/local/opt/tinygo/bin/tinygo /usr/local/bin/tinygo
+            ln -s /usr/local/opt/tinygo/tinygo /usr/local/bin/tinygo
             tinygo version
       - smoketest-no-avr
 
