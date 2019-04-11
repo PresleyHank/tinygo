@@ -124,14 +124,14 @@ func (info *fileInfo) parseFragment(fragment string, cflags []string, posFilenam
 	ref := refMap.Put(info)
 	defer refMap.Remove(ref)
 	cursor := C.clang_getTranslationUnitCursor(unit)
-	C.clang_visitChildren(cursor, C.CXCursorVisitor(C.tinygo_clang_globals_visitor), C.CXClientData(uintptr(ref)))
+	C.clang_visitChildren(cursor, C.CXCursorVisitor(C.tinygo_clang_globals_visitor), C.CXClientData(ref))
 
 	return nil
 }
 
 //export tinygo_clang_globals_visitor
 func tinygo_clang_globals_visitor(c, parent C.CXCursor, client_data C.CXClientData) C.int {
-	info := refMap.Get(uintptr(client_data)).(*fileInfo)
+	info := refMap.Get(unsafe.Pointer(client_data)).(*fileInfo)
 	kind := C.clang_getCursorKind(c)
 	switch kind {
 	case C.CXCursor_FunctionDecl:
@@ -315,7 +315,7 @@ func (info *fileInfo) makeASTType(typ C.CXType) ast.Expr {
 			info      *fileInfo
 		}{fieldList, info})
 		defer refMap.Remove(ref)
-		C.clang_visitChildren(cursor, C.CXCursorVisitor(C.tinygo_clang_struct_visitor), C.CXClientData(uintptr(ref)))
+		C.clang_visitChildren(cursor, C.CXCursorVisitor(C.tinygo_clang_struct_visitor), C.CXClientData(ref))
 		switch C.clang_getCursorKind(cursor) {
 		case C.CXCursor_StructDecl:
 			return &ast.StructType{
@@ -369,7 +369,7 @@ func (info *fileInfo) makeASTType(typ C.CXType) ast.Expr {
 
 //export tinygo_clang_struct_visitor
 func tinygo_clang_struct_visitor(c, parent C.CXCursor, client_data C.CXClientData) C.int {
-	passed := refMap.Get(uintptr(client_data)).(struct {
+	passed := refMap.Get(unsafe.Pointer(client_data)).(struct {
 		fieldList *ast.FieldList
 		info      *fileInfo
 	})
