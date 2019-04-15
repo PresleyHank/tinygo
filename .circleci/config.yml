@@ -187,11 +187,11 @@ commands:
   build-macos:
     steps:
       - checkout
-      - submodules
+      #- submodules
       - run:
           name: "Install dependencies"
           command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install go dep qemu
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install go dep # qemu
       - restore_cache:
           keys:
             - llvm-source-8-macos-v2
@@ -280,7 +280,7 @@ jobs:
 workflows:
   test-all:
     jobs:
-      - test-llvm8-go111
-      - test-llvm8-go112
-      - build-linux
+      #- test-llvm8-go111
+      #- test-llvm8-go112
+      #- build-linux
       - build-macos
